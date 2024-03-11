@@ -1,6 +1,6 @@
-import { createServer } from "node:http";
-import { createSchema, createYoga } from "graphql-yoga";
 import { GraphQLError } from "graphql";
+import { createSchema, createYoga } from "graphql-yoga";
+import { createServer } from "node:http";
 import { v4 } from "uuid";
 
 let users = [
@@ -43,9 +43,10 @@ let comments = [
 // Scalar Types -> ID, String, Int, Boolean, Float
 const typeDefs = /* GraphQL */ `
   type Mutation {
-    createUser(name: String!, age: Int!, email: String!): User!
+    createUser(data: CreateUserInput): User!
+    createPost(data: CreatePostInput): Post!
+    createComment(data: CreateCommentInput): Comment!
   }
-
   type Query {
     users(query: String): [User!]!
     posts(query: String): [Post!]!
@@ -73,12 +74,28 @@ const typeDefs = /* GraphQL */ `
     post: Post!
     creator: User!
   }
+  input CreateUserInput {
+    name: String!
+    age: Int!
+    email: String!
+  }
+  input CreatePostInput {
+    title: String!
+    body: String!
+    published: Boolean
+    authorId: ID!
+  }
+  input CreateCommentInput {
+    text: String!
+    postId: ID!
+    creator: ID!
+  }
 `;
 
 const resolvers = {
   Mutation: {
     createUser: (parent, args, context, info) => {
-      const { name, age, email } = args;
+      const { name, age, email } = args.data;
       let isMatched = users.some(
         (user) => user.email.toLowerCase() === email.toLowerCase()
       );
@@ -93,6 +110,45 @@ const resolvers = {
       };
       users.push(newUser);
       return newUser;
+    },
+    createPost: (parent, args, context, info) => {
+      const { title, body, published, authorId } = args.data;
+
+      const isMatched = users.some((user) => user.id === authorId);
+      if (!isMatched) {
+        throw new GraphQLError("User not found");
+      }
+
+      let newPost = {
+        id: v4(),
+        title,
+        body,
+        published: published ? published : false,
+        author: authorId,
+      };
+
+      posts.push(newPost);
+
+      return newPost;
+    },
+    createComment: (parent, args, context, info) => {
+      const { text, postId, creator } = args.data;
+      const isUserMatch = users.some((user) => user.id === creator);
+      if (!isUserMatch) {
+        throw new GraphQLError("Unable to find user");
+      }
+      const isPostMatched = posts.some((post) => post.id === postId);
+      if (!isPostMatched) {
+        throw new GraphQLError("Post not found");
+      }
+      const newComment = {
+        id: v4(),
+        text,
+        post: postId,
+        creator,
+      };
+      comments.push(newComment);
+      return newComment;
     },
   },
   Query: {
