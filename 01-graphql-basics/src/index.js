@@ -3,6 +3,11 @@ import { createSchema, createYoga } from "graphql-yoga";
 import { createServer } from "node:http";
 import { v4 } from "uuid";
 
+// u001 -> p001, p003 -> c001, c004, c002
+// all the created posts to be deleted
+// all the created comments to be deleted
+// all the comment which is made on the post created by user to be deleted
+
 let users = [
   { id: "u001", name: "monica", email: "monica@example.com", age: 23 },
   { id: "u002", name: "ross", email: "ross@example.com", age: 28 },
@@ -44,6 +49,7 @@ let comments = [
 const typeDefs = /* GraphQL */ `
   type Mutation {
     createUser(data: CreateUserInput): User!
+    deleteUser(authorId: ID!): ID!
     createPost(data: CreatePostInput): Post!
     deletePost(postId: ID!): ID!
     createComment(data: CreateCommentInput): Comment!
@@ -112,6 +118,29 @@ const resolvers = {
       };
       users.push(newUser);
       return newUser;
+    },
+    deleteUser: (parent, args, context, info) => {
+      const position = users.findIndex((user) => user.id === args.authorId);
+      if (position === -1) {
+        throw new GraphQLError("Unable to find user for - " + args.authorId);
+      }
+
+      posts = posts.filter((post) => {
+        const isMatch = post.author === args.authorId;
+
+        if (isMatch) {
+          comments = comments.filter((comment) => comment.post !== post.id);
+        }
+        return !isMatch;
+      });
+
+      comments = comments.filter(
+        (comment) => comment.creator !== args.authorId
+      );
+
+      const [deletedUser] = users.splice(position, 1);
+
+      return deletedUser.id;
     },
     createPost: (parent, args, context, info) => {
       const { title, body, published, authorId } = args.data;
