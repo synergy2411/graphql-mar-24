@@ -31,11 +31,19 @@ let posts = [
   },
 ];
 
+let comments = [
+  { id: "c001", text: "I like it", post: "p001" },
+  { id: "c002", text: "I love ❤️ it", post: "p003" },
+  { id: "c003", text: "Too good", post: "p002" },
+  { id: "c004", text: "This is how to graphql", post: "p001" },
+];
+
 // Scalar Types -> ID, String, Int, Boolean, Float
 const typeDefs = /* GraphQL */ `
   type Query {
     users(query: String): [User!]!
     posts(query: String): [Post!]!
+    comments: [Comment!]!
   }
   type User {
     id: ID!
@@ -50,6 +58,12 @@ const typeDefs = /* GraphQL */ `
     body: String!
     published: Boolean!
     author: User!
+    comments: [Comment!]!
+  }
+  type Comment {
+    id: ID!
+    text: String!
+    post: Post!
   }
 `;
 
@@ -73,6 +87,9 @@ const resolvers = {
       }
       return users;
     },
+    comments: (parent, args, context, info) => {
+      return comments;
+    },
   },
   User: {
     posts: (parent, args, context, info) => {
@@ -82,6 +99,11 @@ const resolvers = {
   Post: {
     author: (parent, args, context, info) => {
       return users.find((user) => user.id === parent.author);
+    },
+  },
+  Comment: {
+    post: (parent, args, context, info) => {
+      return posts.find((post) => post.id === parent.post);
     },
   },
 };
