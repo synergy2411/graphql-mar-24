@@ -45,7 +45,9 @@ const typeDefs = /* GraphQL */ `
   type Mutation {
     createUser(data: CreateUserInput): User!
     createPost(data: CreatePostInput): Post!
+    deletePost(postId: ID!): ID!
     createComment(data: CreateCommentInput): Comment!
+    deleteComment(commentId: ID!): ID!
   }
   type Query {
     users(query: String): [User!]!
@@ -131,6 +133,18 @@ const resolvers = {
 
       return newPost;
     },
+    deletePost: (parent, args, context, info) => {
+      const position = posts.findIndex((post) => post.id === args.postId);
+
+      if (position === -1) {
+        throw new GraphQLError("Unable to find post for - " + args.postId);
+      }
+
+      comments = comments.filter((comment) => comment.post !== args.postId);
+
+      const [deletedPost] = posts.splice(position, 1);
+      return deletedPost.id;
+    },
     createComment: (parent, args, context, info) => {
       const { text, postId, creator } = args.data;
       const isUserMatch = users.some((user) => user.id === creator);
@@ -149,6 +163,19 @@ const resolvers = {
       };
       comments.push(newComment);
       return newComment;
+    },
+    deleteComment: (parent, args, context, info) => {
+      const position = comments.findIndex(
+        (comment) => comment.id === args.commentId
+      );
+
+      if (position === -1) {
+        throw new GraphQLError("Unable to find comment for " + args.commentId);
+      }
+
+      const [deletedComment] = comments.splice(position, 1);
+
+      return deletedComment.id;
     },
   },
   Query: {
