@@ -30,4 +30,5 @@
 - npm init -y
 - npm install graphql-yoga graphql
 - npm install nodemon -D
+- Package.json file > "start" : "nodemon src/index.js"
 - npm run start || npm start

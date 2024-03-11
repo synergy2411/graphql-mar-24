@@ -8,82 +8,80 @@ let users = [
 ];
 
 let posts = [
-  { id: "p001", title: "GraphQL 101", body: "Awesome book", published: false },
+  {
+    id: "p001",
+    title: "GraphQL 101",
+    body: "Awesome book",
+    published: false,
+    author: "u001",
+  },
   {
     id: "p002",
     title: "Mastering GraphQL",
-    body: "for adbaced users",
+    body: "for advanced users",
     published: true,
+    author: "u002",
   },
   {
     id: "p003",
     title: "Learn React",
     body: "Learn React from Beginning",
     published: true,
+    author: "u001",
   },
 ];
 
 // Scalar Types -> ID, String, Int, Boolean, Float
 const typeDefs = /* GraphQL */ `
   type Query {
-    userId: ID!
-    hello: String!
-    age: Int!
-    isAdmin: Boolean!
-    gpa: Float!
-    me: User!
-    post: Post!
-    friends: [String!]!
-    users: [User!]!
-    posts: [Post!]!
+    users(query: String): [User!]!
+    posts(query: String): [Post!]!
   }
   type User {
     id: ID!
     name: String!
     age: Int
     email: String!
+    posts: [Post!]!
   }
   type Post {
     id: ID!
     title: String!
     body: String!
     published: Boolean!
+    author: User!
   }
 `;
 
 const resolvers = {
   Query: {
-    posts: () => {
+    posts: (parent, args, context, info) => {
+      if (args.query) {
+        return posts.filter(
+          (post) =>
+            post.title.toLowerCase().includes(args.query.toLowerCase()) ||
+            post.body.toLowerCase().includes(args.query.toLowerCase())
+        );
+      }
       return posts;
     },
-    users: () => {
+    users: (parent, args, context, info) => {
+      if (args.query) {
+        return users.filter((user) =>
+          user.name.toLowerCase().includes(args.query.toLowerCase())
+        );
+      }
       return users;
     },
-    friends: () => {
-      return ["Monica", "Ross", "Rachel", "Joey"];
+  },
+  User: {
+    posts: (parent, args, context, info) => {
+      return posts.filter((post) => post.author === parent.id);
     },
-    hello: () => "World",
-    age: () => 21,
-    isAdmin: () => true,
-    gpa: () => 3.14,
-    userId: () => "test123",
-    me: () => {
-      const user = {
-        id: "110",
-        name: "Monica",
-        email: "monica@test.com",
-        age: null,
-      };
-      return user;
-    },
-    post: () => {
-      const post = {
-        id: "p001",
-        title: "Graphql 101",
-        body: "...",
-        published: false,
-      };
-      return post;
+  },
+  Post: {
+    author: (parent, args, context, info) => {
+      return users.find((user) => user.id === parent.author);
     },
   },
 };
