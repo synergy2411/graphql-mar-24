@@ -1,5 +1,7 @@
 import { createServer } from "node:http";
 import { createSchema, createYoga } from "graphql-yoga";
+import { GraphQLError } from "graphql";
+import { v4 } from "uuid";
 
 let users = [
   { id: "u001", name: "monica", email: "monica@example.com", age: 23 },
@@ -40,6 +42,10 @@ let comments = [
 
 // Scalar Types -> ID, String, Int, Boolean, Float
 const typeDefs = /* GraphQL */ `
+  type Mutation {
+    createUser(name: String!, age: Int!, email: String!): User!
+  }
+
   type Query {
     users(query: String): [User!]!
     posts(query: String): [Post!]!
@@ -70,6 +76,25 @@ const typeDefs = /* GraphQL */ `
 `;
 
 const resolvers = {
+  Mutation: {
+    createUser: (parent, args, context, info) => {
+      const { name, age, email } = args;
+      let isMatched = users.some(
+        (user) => user.email.toLowerCase() === email.toLowerCase()
+      );
+      if (isMatched) {
+        throw new GraphQLError("Email already taken.");
+      }
+      const newUser = {
+        name,
+        age,
+        email,
+        id: v4(),
+      };
+      users.push(newUser);
+      return newUser;
+    },
+  },
   Query: {
     posts: (parent, args, context, info) => {
       if (args.query) {
