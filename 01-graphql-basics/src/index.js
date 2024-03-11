@@ -32,10 +32,10 @@ let posts = [
 ];
 
 let comments = [
-  { id: "c001", text: "I like it", post: "p001" },
-  { id: "c002", text: "I love ❤️ it", post: "p003" },
-  { id: "c003", text: "Too good", post: "p002" },
-  { id: "c004", text: "This is how to graphql", post: "p001" },
+  { id: "c001", text: "I like it", post: "p001", creator: "u003" },
+  { id: "c002", text: "I love ❤️ it", post: "p003", creator: "u002" },
+  { id: "c003", text: "Too good", post: "p002", creator: "u003" },
+  { id: "c004", text: "This is how to graphql", post: "p001", creator: "u002" },
 ];
 
 // Scalar Types -> ID, String, Int, Boolean, Float
@@ -51,6 +51,7 @@ const typeDefs = /* GraphQL */ `
     age: Int
     email: String!
     posts: [Post!]!
+    comments: [Comment!]!
   }
   type Post {
     id: ID!
@@ -64,6 +65,7 @@ const typeDefs = /* GraphQL */ `
     id: ID!
     text: String!
     post: Post!
+    creator: User!
   }
 `;
 
@@ -95,15 +97,24 @@ const resolvers = {
     posts: (parent, args, context, info) => {
       return posts.filter((post) => post.author === parent.id);
     },
+    comments: (parent, args, context, info) => {
+      return comments.filter((comment) => comment.author === parent.id);
+    },
   },
   Post: {
     author: (parent, args, context, info) => {
       return users.find((user) => user.id === parent.author);
     },
+    comments: (parent, args, context, info) => {
+      return comments.filter((comment) => comment.post === parent.id);
+    },
   },
   Comment: {
     post: (parent, args, context, info) => {
       return posts.find((post) => post.id === parent.post);
+    },
+    creator: (parent, args, context, info) => {
+      return users.find((user) => user.id === parent.creator);
     },
   },
 };
