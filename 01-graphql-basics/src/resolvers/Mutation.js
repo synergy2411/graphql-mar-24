@@ -73,7 +73,7 @@ const Mutation = {
     const [deletedPost] = db.posts.splice(position, 1);
     return deletedPost.id;
   },
-  createComment: (parent, args, { db }, info) => {
+  createComment: (parent, args, { db, pubsub }, info) => {
     const { text, postId, creator } = args.data;
     const isUserMatch = db.users.some((user) => user.id === creator);
     if (!isUserMatch) {
@@ -89,6 +89,7 @@ const Mutation = {
       post: postId,
       creator,
     };
+    pubsub.publish(`comment ${postId}`, newComment);
     db.comments.push(newComment);
     return newComment;
   },
