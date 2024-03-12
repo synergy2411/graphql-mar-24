@@ -1,7 +1,7 @@
 const Subscription = {
   comment: {
     subscribe(parent, args, { db, pubsub }, info) {
-      return pubsub.subscribe(`comment ${args.postId}`);
+      return pubsub.subscribe(`comment`);
     },
     resolve: (payload) => payload,
   },

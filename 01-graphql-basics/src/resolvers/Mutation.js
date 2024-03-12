@@ -89,11 +89,11 @@ const Mutation = {
       post: postId,
       creator,
     };
-    pubsub.publish(`comment ${postId}`, newComment);
+    pubsub.publish(`comment`, { mutationType: "CREATED", comment: newComment });
     db.comments.push(newComment);
     return newComment;
   },
-  deleteComment: (parent, args, { db }, info) => {
+  deleteComment: (parent, args, { db, pubsub }, info) => {
     const position = db.comments.findIndex(
       (comment) => comment.id === args.commentId
     );
@@ -104,9 +104,13 @@ const Mutation = {
 
     const [deletedComment] = db.comments.splice(position, 1);
 
+    pubsub.publish("comment", {
+      mutationType: "DELETED",
+      comment: deletedComment,
+    });
     return deletedComment.id;
   },
-  updateComment: (parent, args, { db }, info) => {
+  updateComment: (parent, args, { db, pubsub }, info) => {
     const { commentId, text } = args;
     const foundComment = db.comments.find(
       (comment) => comment.id === commentId
@@ -117,6 +121,10 @@ const Mutation = {
 
     foundComment.text = text;
 
+    pubsub.publish("comment", {
+      mutationType: "UPDATED",
+      comment: foundComment,
+    });
     return foundComment;
   },
 };
