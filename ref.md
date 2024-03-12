@@ -75,3 +75,5 @@ testuser
 > install Extensions - Prettier, Prisma
 > Open the workspace settings.json
 > npx prisma db push || npx prisma migrate dev --name=myMigration
+> npm install bcryptjs
+> npm install jsonwebtoken
