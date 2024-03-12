@@ -41,7 +41,7 @@ const Mutation = {
 
     return deletedUser.id;
   },
-  createPost: (parent, args, { db }, info) => {
+  createPost: (parent, args, { db, pubsub }, info) => {
     const { title, body, published, authorId } = args.data;
 
     const isMatched = db.users.some((user) => user.id === authorId);
@@ -57,11 +57,12 @@ const Mutation = {
       author: authorId,
     };
 
+    pubsub.publish("post", { mutationType: "CREATED", post: newPost });
     db.posts.push(newPost);
 
     return newPost;
   },
-  deletePost: (parent, args, { db }, info) => {
+  deletePost: (parent, args, { db, pubsub }, info) => {
     const position = db.posts.findIndex((post) => post.id === args.postId);
 
     if (position === -1) {
@@ -71,6 +72,7 @@ const Mutation = {
     db.comments = db.comments.filter((comment) => comment.post !== args.postId);
 
     const [deletedPost] = db.posts.splice(position, 1);
+    pubsub.publish("post", { mutationType: "DELETED", post: deletedPost });
     return deletedPost.id;
   },
   createComment: (parent, args, { db, pubsub }, info) => {
