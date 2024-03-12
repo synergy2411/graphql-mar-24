@@ -14,6 +14,7 @@ const typeDefs = /* GraphQL */ `
   type Mutation {
     createUser(data: CreateUserInput!): User!
     userLogin(data: LoginUserInput): LoginPayload!
+    createPost(data: CreatePostInput): Post!
   }
   type Query {
     users: [User!]!
@@ -23,6 +24,15 @@ const typeDefs = /* GraphQL */ `
     name: String!
     email: String!
     age: Int!
+    role: Role!
+    posts: [Post!]!
+  }
+  type Post {
+    id: ID!
+    title: String!
+    body: String!
+    published: Boolean
+    author: User!
   }
   type LoginPayload {
     token: String!
@@ -36,13 +46,25 @@ const typeDefs = /* GraphQL */ `
     email: String!
     age: Int!
     password: String!
+    role: Role!
+  }
+  input CreatePostInput {
+    title: String!
+    body: String!
+    published: Boolean
+    userId: ID!
+  }
+  enum Role {
+    ANALYST
+    PROGRAMMER
+    MANAGER
   }
 `;
 
 const resolvers = {
   Mutation: {
     createUser: async (parent, args, context, info) => {
-      const { name, email, age, password } = args.data;
+      const { name, email, age, password, role } = args.data;
       const hashedPassword = hashSync(password, 12);
       try {
         const createdUser = await prisma.user.create({
@@ -50,6 +72,7 @@ const resolvers = {
             name,
             email,
             age,
+            role,
             password: hashedPassword,
           },
         });
@@ -80,6 +103,31 @@ const resolvers = {
         const token = jwt.sign({ id: foundUser.id }, "MY_SECRET_KET");
         // return token
         return { token };
+      } catch (err) {
+        throw new GraphQLError(err);
+      }
+    },
+    createPost: async (parent, args, context, info) => {
+      const { title, body, published, userId } = args.data;
+
+      try {
+        const foundUser = await prisma.user.findFirst({
+          where: {
+            id: userId,
+          },
+        });
+        if (!foundUser) {
+          throw new GraphQLError("Unable to find user");
+        }
+        const createdPost = await prisma.post.create({
+          data: {
+            title,
+            body,
+            published,
+            userId,
+          },
+        });
+        return createdPost;
       } catch (err) {
         throw new GraphQLError(err);
       }
