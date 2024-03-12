@@ -1,0 +1,53 @@
+type Mutation {
+  createUser(data: CreateUserInput!): User!
+  userLogin(data: LoginUserInput): LoginPayload!
+  createPost(data: CreatePostInput): Post!
+  deletePost(postId: ID!): ID!
+}
+type Query {
+  users: [User!]!
+  posts(take: Int, skip: Int, sort: SortEnum): [Post!]!
+}
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int!
+  role: Role!
+  posts: [Post!]!
+}
+type Post {
+  id: ID!
+  title: String!
+  body: String!
+  published: Boolean
+  author: User!
+}
+type LoginPayload {
+  token: String!
+}
+input LoginUserInput {
+  email: String!
+  password: String!
+}
+input CreateUserInput {
+  name: String!
+  email: String!
+  age: Int!
+  password: String!
+  role: Role!
+}
+input CreatePostInput {
+  title: String!
+  body: String!
+  published: Boolean
+}
+enum Role {
+  ANALYST
+  PROGRAMMER
+  MANAGER
+}
+enum SortEnum {
+  asc
+  desc
+}
