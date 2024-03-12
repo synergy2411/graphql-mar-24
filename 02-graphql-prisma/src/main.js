@@ -18,6 +18,7 @@ const typeDefs = /* GraphQL */ `
   }
   type Query {
     users: [User!]!
+    posts(take: Int, skip: Int, sort: SortEnum): [Post!]!
   }
   type User {
     id: ID!
@@ -52,12 +53,15 @@ const typeDefs = /* GraphQL */ `
     title: String!
     body: String!
     published: Boolean
-    userId: ID!
   }
   enum Role {
     ANALYST
     PROGRAMMER
     MANAGER
+  }
+  enum SortEnum {
+    asc
+    desc
   }
 `;
 
@@ -100,20 +104,25 @@ const resolvers = {
         }
 
         // Create token
-        const token = jwt.sign({ id: foundUser.id }, "MY_SECRET_KET");
+        const token = jwt.sign({ id: foundUser.id }, "MY_SECRET_KEY");
         // return token
         return { token };
       } catch (err) {
         throw new GraphQLError(err);
       }
     },
-    createPost: async (parent, args, context, info) => {
-      const { title, body, published, userId } = args.data;
+    createPost: async (parent, args, { token }, info) => {
+      const { title, body, published } = args.data;
+
+      if (!token) {
+        throw new GraphQLError("Token Not found. Please login.");
+      }
 
       try {
+        const { id } = jwt.verify(token, "MY_SECRET_KEY");
         const foundUser = await prisma.user.findFirst({
           where: {
-            id: userId,
+            id,
           },
         });
         if (!foundUser) {
@@ -124,7 +133,7 @@ const resolvers = {
             title,
             body,
             published,
-            userId,
+            userId: id,
           },
         });
         return createdPost;
@@ -135,8 +144,30 @@ const resolvers = {
   },
   Query: {
     users: async () => {
-      const allUSers = await prisma.user.findMany();
+      const allUSers = await prisma.user.findMany({
+        include: {
+          posts: true,
+        },
+      });
       return allUSers;
+    },
+    posts: async (parent, args, context, info) => {
+      const { take, skip, sort } = args;
+      try {
+        const allPosts = await prisma.post.findMany({
+          include: {
+            author: true,
+          },
+          take,
+          skip,
+          orderBy: {
+            title: sort,
+          },
+        });
+        return allPosts;
+      } catch (err) {
+        throw new GraphQLError(err);
+      }
     },
   },
 };
@@ -147,7 +178,20 @@ const startServer = () => {
     resolvers,
   });
 
-  const yoga = createYoga({ schema });
+  const yoga = createYoga({
+    schema,
+    graphiql: true,
+    context: ({ request, params }) => {
+      let token = null;
+      const authHeader = request.headers.get("authorization");
+      if (authHeader) {
+        token = authHeader.split(" ")[1];
+      }
+      return {
+        token,
+      };
+    },
+  });
 
   const server = createServer(yoga);
 
