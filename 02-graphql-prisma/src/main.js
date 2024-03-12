@@ -15,6 +15,7 @@ const typeDefs = /* GraphQL */ `
     createUser(data: CreateUserInput!): User!
     userLogin(data: LoginUserInput): LoginPayload!
     createPost(data: CreatePostInput): Post!
+    deletePost(postId: ID!): ID!
   }
   type Query {
     users: [User!]!
@@ -137,6 +138,30 @@ const resolvers = {
           },
         });
         return createdPost;
+      } catch (err) {
+        throw new GraphQLError(err);
+      }
+    },
+    deletePost: async (parent, args, { token }, info) => {
+      if (!token) {
+        throw new GraphQLError("Unable to find the user");
+      }
+
+      try {
+        const { id } = jwt.verify(token, "MY_SECRET_KEY");
+
+        const foundUser = prisma.user.findUnique({ where: { id } });
+        if (!foundUser) {
+          throw new GraphQLError("Unable to find the user");
+        }
+
+        const deletedPost = await prisma.post.delete({
+          where: {
+            id: args.postId,
+          },
+        });
+
+        return deletedPost.id;
       } catch (err) {
         throw new GraphQLError(err);
       }
