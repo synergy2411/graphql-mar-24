@@ -1,5 +1,3 @@
-mongod --dbpath /Users/sumitkhandelwal/mongodb/data --logpath /Users/sumitkhandelwal/mongodb/logs/mongo.log
-
 # REST API
 
 - Over-fetching : More data than needed in app
@@ -51,3 +49,29 @@ Request-Response Cycle
 - Prisma - ORM
 - Authentication using JWT
 - Protect the resources
+
+# NoSQL Databases
+
+- Document based DB -> MongoDB
+- Column based DB -> Cassendra
+- Graph based DB -> Neo4Js
+- key-value pair based -> Redis
+
+# MongoDB Installation
+
+- mongod - Mongo Deamon - Server
+- mongosh - Mongo Client
+
+Mongo URI -
+mongodb+srv://testuser:5D4Ib5fire4ZGPmK@cluster0.e9xsq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+testuser
+5D4Ib5fire4ZGPmK
+
+# Prisma Project
+
+> npm init -y
+> npx prisma init
+> install Extensions - Prettier, Prisma
+> Open the workspace settings.json
+> npx prisma db push || npx prisma migrate dev --name=myMigration
