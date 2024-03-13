@@ -92,3 +92,6 @@ testuser
 - npm install @apollo/client react graphql
 
 - npm install jest -D
+- npm init jest
+- npm install jest-environment-jsdom -D
+- npm install cross-fetch -D
