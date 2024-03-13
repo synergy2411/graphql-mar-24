@@ -16,12 +16,34 @@ const FETCH_POSTS = gql`
   }
 `;
 
+const USER_LOGIN = gql`
+  mutation {
+    userLogin(data: { email: "monica@test.com", password: "monica123" }) {
+      token
+    }
+  }
+`;
+
 window.onload = function () {
   const listContainer = document.querySelector("#list-container");
 
-  // client.mutate({
-  //   mutation : ""// Supply mutation here
-  // })
+  const btnLogin = document.querySelector("#btnLogin");
+
+  let token = null;
+
+  btnLogin.addEventListener("click", function (e) {
+    e.preventDefault();
+    client
+      .mutate({
+        mutation: USER_LOGIN,
+      })
+      .then((response) => {
+        token = response.data.userLogin.token;
+        console.log(token);
+        localStorage.setItem("token", response.data.userLogin.token);
+      })
+      .catch(console.error);
+  });
 
   client
     .query({
