@@ -20,6 +20,11 @@ const Query = {
           title: sort,
         },
       });
+      await new Promise((resolve) =>
+        setTimeout(() => {
+          resolve();
+        }, 1500)
+      );
       return allPosts;
     } catch (err) {
       throw new GraphQLError(err);

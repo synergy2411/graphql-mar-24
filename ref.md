@@ -95,3 +95,11 @@ testuser
 - npm init jest
 - npm install jest-environment-jsdom -D
 - npm install cross-fetch -D
+
+# Frontend React App
+
+- npm create vite@latest
+- cd frontend-react
+- npm install
+- npm install @apollo/client graphql bootstrap
+- npm run dev
