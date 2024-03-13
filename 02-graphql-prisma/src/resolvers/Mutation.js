@@ -42,7 +42,13 @@ const Mutation = {
       }
 
       // Create token
-      const token = jwt.sign({ id: foundUser.id }, "MY_SECRET_KEY");
+      const token = jwt.sign(
+        { id: foundUser.id, name: foundUser.name },
+        "MY_SECRET_KEY",
+        {
+          expiresIn: "1d",
+        }
+      );
       // return token
       return { token };
     } catch (err) {

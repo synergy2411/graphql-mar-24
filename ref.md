@@ -75,5 +75,18 @@ testuser
 > install Extensions - Prettier, Prisma
 > Open the workspace settings.json
 > npx prisma db push || npx prisma migrate dev --name=myMigration
-> npm install bcryptjs
-> npm install jsonwebtoken
+> npm install bcryptjs (hash, compare)
+> npm install jsonwebtoken (sign, verify)
+
+---
+
+- Consume the GraphQL Queries on frontend (Vanilla JS)
+- Query Testing - Jest
+- React POC consuming GraphQL endpoint
+
+---
+
+# Frontend Tooling
+
+- npm create vite@latest
+- npm install @apollo/client react graphql

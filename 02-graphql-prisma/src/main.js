@@ -6,6 +6,8 @@ import { PrismaClient } from "@prisma/client";
 import Mutation from "./resolvers/Mutation.js";
 import Query from "./resolvers/Query.js";
 
+const PORT = process.env.PORT || 4040;
+
 const prisma = new PrismaClient();
 
 const startServer = () => {
@@ -32,7 +34,9 @@ const startServer = () => {
 
   const server = createServer(yoga);
 
-  server.listen(4044, () => console.log("Yoga Server started at PORT : 4044"));
+  server.listen(PORT, () =>
+    console.log("Yoga Server started at PORT : ", PORT)
+  );
 };
 
 async function main() {

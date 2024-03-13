@@ -1,5 +1,3 @@
-import { GraphQLError } from "graphql";
-
 const Query = {
   users: async (parent, args, { prisma }, info) => {
     const allUSers = await prisma.user.findMany({
