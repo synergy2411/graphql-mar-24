@@ -90,3 +90,5 @@ testuser
 
 - npm create vite@latest
 - npm install @apollo/client react graphql
+
+- npm install jest -D
