@@ -22,6 +22,7 @@ const startServer = () => {
     context: ({ request, params }) => {
       let token = null;
       const authHeader = request.headers.get("authorization");
+      console.log("AUTH HEADER --->", authHeader);
       if (authHeader) {
         token = authHeader.split(" ")[1];
       }
